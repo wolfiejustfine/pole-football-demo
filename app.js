@@ -5,3 +5,5 @@ const scenes = [
 ];
 function showScene(index){const scene=scenes[index];document.querySelector('#sceneTitle').textContent=scene.title;document.querySelector('#timecode').textContent=scene.time;document.querySelector('#insightTitle').textContent=scene.insight;document.querySelector('#insightText').textContent=scene.text;for(const id of ['players','miniPlayers']){const container=document.getElementById(id);container.replaceChildren(...scene.points.map(([x,y,team])=>{const dot=document.createElement('i');dot.className=`player ${team}`;dot.style.left=`${x}%`;dot.style.top=`${y}%`;return dot;}));}document.querySelectorAll('.moment').forEach((button,i)=>{button.classList.toggle('active',i===index);button.setAttribute('aria-pressed',String(i===index));});}
 document.querySelectorAll('.moment').forEach((button,i)=>button.addEventListener('click',()=>showScene(i)));showScene(0);
+
+if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { const video = document.querySelector(".record-video"); video.autoplay = false; video.pause(); }
