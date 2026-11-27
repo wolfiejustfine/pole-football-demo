@@ -45,10 +45,28 @@ demoVideo.addEventListener('seeked', () => { lastObservation = -1; renderObserva
 overlayToggle.addEventListener('click', () => { overlayEnabled = !overlayEnabled; overlay.hidden = !overlayEnabled || !observations; overlayToggle.setAttribute('aria-pressed', String(overlayEnabled)); overlayToggle.textContent = `◉ Метрики на видео: ${overlayEnabled ? 'вкл.' : 'выкл.'}`; if (overlayEnabled) { lastObservation = -1; renderObservation(); } });
 fetch('assets/observations.json').then(response => { if (!response.ok) throw new Error('data'); return response.json(); }).then(data => { observations = data; overlay.hidden = !overlayEnabled; renderObservation(); startObservationLoop(); }).catch(() => { overlay.hidden = true; overlayToggle.disabled = true; overlayMessage.textContent = 'Данные наблюдений не загрузились'; });
 
-const contextDefaults = { stadium: 'Пример стадиона', weather: 'Ясно, +18 °C', officials: '', squadA: '', squadB: '' };
-const contextFields = [['stadium','Stadium','Не указан'], ['weather','Weather','Не указана'], ['officials','Officials','Не указана'], ['squadA','SquadA','Добавьте игроков и номера'], ['squadB','SquadB','Добавьте игроков и номера']];
+const contextDefaults = {
+  teamA: 'Север', teamB: 'Орбита', stadium: 'Стадион «Заря» · Тверь', weather: 'Облачно · +18 °C · ветер 3 м/с',
+  officials: 'Главный судья: Алексей Волков\nПомощники: Мария Соколова, Игорь Лебедев\nРезервный: Артём Крылов',
+  squadA: '1 Максим Орлов · ВР\n2 Кирилл Беляев · ЗАЩ\n4 Денис Фролов · ЗАЩ\n5 Никита Миронов · ЗАЩ\n18 Артём Корнеев · ЗАЩ\n6 Илья Давыдов · ПЗ\n8 Матвей Громов · ПЗ\n10 Андрей Зорин · ПЗ\n7 Роман Тихонов · НАП\n9 Павел Ветров · НАП\n11 Егор Смирнов · НАП',
+  squadB: '1 Иван Лапин · ВР\n3 Алексей Романов · ЗАЩ\n4 Никита Ершов · ЗАЩ\n5 Максим Данилов · ЗАЩ\n17 Даниил Фомин · ЗАЩ\n6 Арсений Голубев · ПЗ\n8 Сергей Котов · ПЗ\n14 Игорь Серов · ПЗ\n7 Степан Волков · НАП\n9 Александр Морозов · НАП\n11 Тимофей Зайцев · НАП'
+};
+const contextFields = [['teamA','TeamA','Команда A'], ['teamB','TeamB','Команда B'], ['stadium','Stadium','Не указан'], ['weather','Weather','Не указана'], ['officials','Officials','Не указана'], ['squadA','SquadA','Добавьте игроков и номера'], ['squadB','SquadB','Добавьте игроков и номера']];
 let matchContext = {...contextDefaults};
-try { const saved = JSON.parse(localStorage.getItem('pole-demo-context') || 'null'); if (saved && typeof saved === 'object') for (const [key] of contextFields) if (typeof saved[key] === 'string') matchContext[key] = saved[key]; } catch {}
-function showContext() { for (const [key, id, empty] of contextFields) { document.getElementById('show'+id).textContent = matchContext[key] || empty; document.getElementById('edit'+id).value = matchContext[key]; } }
+try { const saved = JSON.parse(localStorage.getItem('pole-demo-context') || 'null'); if (saved && typeof saved === 'object') { const oldExample = !saved.teamA && !saved.teamB && saved.stadium === 'Пример стадиона' && saved.weather === 'Ясно, +18 °C' && !saved.officials && !saved.squadA && !saved.squadB; if (!oldExample) for (const [key] of contextFields) if (typeof saved[key] === 'string') matchContext[key] = saved[key]; } } catch {}
+function showContext() {
+  for (const [key, id, empty] of contextFields) {
+    const value = matchContext[key] || '';
+    document.getElementById('edit'+id).value = value;
+    if (key === 'teamA' || key === 'teamB') { document.getElementById(key+'Name').textContent = value || empty; continue; }
+    const target = document.getElementById('show'+id);
+    if (key === 'squadA' || key === 'squadB') {
+      const lines = value.split('\n').map(line => line.trim()).filter(Boolean);
+      target.replaceChildren(...(lines.length ? lines : [empty]).map(line => { const row=document.createElement('div'); row.className='squad-player'; const match=line.match(/^(\d{1,2})\s+(.+)$/); if(match){const number=document.createElement('span'); number.className='squad-number'; number.textContent=match[1]; const name=document.createElement('span'); name.textContent=match[2]; row.append(number,name);} else row.textContent=line; return row; }));
+    } else target.textContent = value || empty;
+  }
+}
 showContext();
 document.getElementById('contextForm').addEventListener('submit', event => { event.preventDefault(); const next = {}; for (const [key, id] of contextFields) next[key] = document.getElementById('edit'+id).value.trim(); try { localStorage.setItem('pole-demo-context', JSON.stringify(next)); matchContext = next; showContext(); document.getElementById('contextStatus').textContent = 'Сохранено в этом браузере'; } catch { document.getElementById('contextStatus').textContent = 'Не удалось сохранить данные в браузере'; } });
+
+document.getElementById('fillExample').addEventListener('click', () => { for (const [key,id] of contextFields) document.getElementById('edit'+id).value = contextDefaults[key]; document.getElementById('contextStatus').textContent = 'Пример заполнен. Нажмите «Сохранить данные».'; });
