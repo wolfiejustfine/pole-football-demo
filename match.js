@@ -6,4 +6,5 @@
  function openMoment(seconds){openView('video');const video=document.querySelector('#demoTacticalVideo');video.pause();const seek=()=>{video.currentTime=seconds;};if(video.readyState>=1)seek();else video.addEventListener('loadedmetadata',seek,{once:true});document.querySelector('#panel-video').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
  document.querySelectorAll('[data-seek]').forEach(button=>button.addEventListener('click',()=>openMoment(Number(button.dataset.seek))));
  for(const id of ['shotMetric','distanceMetric','shotPoint','shotLink'])document.getElementById(id).addEventListener('click',()=>openMoment(8));
+ const initialView=new URLSearchParams(location.search).get('view');if(tabs.some(tab=>tab.dataset.view===initialView))openView(initialView);
 })();
