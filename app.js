@@ -7,3 +7,9 @@ function showScene(index){const scene=scenes[index];document.querySelector('#sce
 document.querySelectorAll('.moment').forEach((button,i)=>button.addEventListener('click',()=>showScene(i)));showScene(0);
 
 if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { const video = document.querySelector(".record-video"); video.autoplay = false; video.pause(); }
+
+const demoVideo = document.querySelector('.record-video');
+const videoToggle = document.querySelector('.video-toggle');
+function updateVideoToggle() { const paused = demoVideo.paused; videoToggle.innerHTML = paused ? '▶ <span>Смотреть</span>' : '❚❚ <span>Пауза</span>'; videoToggle.setAttribute('aria-label', paused ? 'Воспроизвести видео' : 'Остановить видео'); }
+videoToggle.addEventListener('click', () => { if (demoVideo.paused) demoVideo.play().catch(updateVideoToggle); else demoVideo.pause(); });
+demoVideo.addEventListener('play', updateVideoToggle); demoVideo.addEventListener('pause', updateVideoToggle); updateVideoToggle();
